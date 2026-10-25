@@ -39,12 +39,12 @@ docker compose logs app | grep -A2 "\[INIT\]"
 
 ```bash
 docker compose down
-rm -rf data
-tar xzf backup-20260101-120000.tar.gz
+rm -rf data && mkdir -p data
+tar xzf backup-20260101-120000.tar.gz -C data
 docker compose up -d
 ```
 
-建议先停容器再打包，SQLite 的 WAL 文件才会完整落盘；本项目已开启 WAL，热备可能丢失最后几条写入。
+脚本优先在容器内打包（`docker compose exec app tar`），因此不受宿主机上 `data/` 属主为 root 的影响；容器未运行时退回 `docker run` 只读挂载。建议先停容器再打包，SQLite 的 WAL 才会完整落盘；本项目开启 WAL，热备可能丢失最后几条写入。
 
 ## 环境变量
 
