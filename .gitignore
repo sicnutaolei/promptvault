@@ -7,3 +7,4 @@ data
 next-env.d.ts
 backup-*.tar.gz
 *.tsbuildinfo
+docker-compose.override.yml
