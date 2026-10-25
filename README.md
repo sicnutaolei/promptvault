@@ -56,6 +56,7 @@ docker compose up -d
 | `ADMIN_USERNAME` | `admin` | 首次初始化的管理员用户名 |
 | `UPLOAD_MAX_MB` | `10` | 单张图片上限（MB） |
 | `COOKIE_SECURE` | `false` | HTTPS 反代时设为 `true` |
+| `APP_PORT` | `3000` | 宿主机映射端口（compose 用 `APP_PORT=3100` 可避免冲突） |
 
 ## HTTPS 反向代理
 
@@ -101,7 +102,7 @@ DATA_DIR=./data-dev npm start        # 本地跑生产版本
 
 ## 常见问题
 
-**端口 3000 被占用？** 先查 `ss -lntp | grep :3000`（或 Windows `netstat -ano | findstr :3000`）。改 `docker-compose.yml` 的 `ports` 左侧端口即可，例如 `"3100:3000"`，容器内不用改。
+**端口 3000 被占用？** 先查 `ss -lntp | grep :3000`（或 Windows `netstat -ano | findstr :3000`）。在项目目录建一个 `.env` 写 `APP_PORT=3100` 再 `docker compose up -d` 即可，容器内仍是 3000，不用改代码。
 
 **日志里没有密码？** 只有 `users` 表为空时才会初始化。已有数据时密码不会重复打印；可用 `docker compose down && rm -rf data && docker compose up -d` 重置（会清空全部内容）。
 
