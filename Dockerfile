@@ -17,7 +17,8 @@ RUN --mount=type=cache,target=/root/.npm npm ci
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npm run build
+# Git 不提交空目录；public 不存在时 COPY 会失败，这里兜底建一个
+RUN mkdir -p public && npm run build
 
 # ---------- runner ----------
 FROM node:20-bookworm-slim AS runner
