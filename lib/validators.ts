@@ -50,6 +50,7 @@ export const promptSchema = z.object({
 
 export const roleSchema = z.enum(['example', 'reference', 'generated']);
 export const promptIdsSchema = z.object({ promptIds: z.array(z.number().int().positive()).max(500) });
+export const collectionIdsSchema = z.object({ ids: z.array(z.number().int().positive()).max(500) });
 export const deleteUploadSchema = z.object({ filePath: relPath, thumbPath: relPath });
 export const siteSettingsSchema = z.object({
   slogan: z.string().trim().min(1, 'Slogan 不能为空').max(200, 'Slogan 最多 200 字'),

@@ -29,6 +29,8 @@ export default function PromptForm({ mode, initial }: { mode: 'create' | 'edit';
     reference: useRef<HTMLInputElement>(null),
     generated: useRef<HTMLInputElement>(null),
   };
+  // 已在数据库里的图片：移除只改表单，等 PATCH 成功后才由 updatePrompt 删文件。
+  const savedPaths = useRef(new Set((initial?.images || []).map((i: PromptImage) => i.file_path)));
 
   async function addFiles(role: ImageInput['role'], files: FileList) {
     setErr(''); setBusy(true);
@@ -49,7 +51,14 @@ export default function PromptForm({ mode, initial }: { mode: 'create' | 'edit';
 
   async function removeImage(index: number) {
     const img = images[index];
-    await deleteUpload(img.filePath, img.thumbPath);
+    if (!img) return;
+    setErr('');
+    // 本次新上传、尚未入库的图可以立刻删；已有图留到保存成功再删，取消编辑时不会把线上图片弄坏。
+    if (!savedPaths.current.has(img.filePath)) {
+      try { await deleteUpload(img.filePath, img.thumbPath); } catch { /* 交给孤儿清理 */ }
+    } else {
+      setMsg('已从表单移除，保存后才会删除原图');
+    }
     setImages((prev) => prev.filter((_, i) => i !== index));
   }
 
@@ -132,7 +141,7 @@ export default function PromptForm({ mode, initial }: { mode: 'create' | 'edit';
       <div className="pv-card space-y-4 p-5">
         <div>
           <h2 className="text-[13px] font-medium text-[#6b7789]">图片（{images.length}）</h2>
-          <p className="mt-1 text-[11.5px] text-[#98a3b3]">图片均为可选，不上传也能保存。支持 jpg / png / webp，单张不超过 {process.env.NEXT_PUBLIC_UPLOAD_MAX_MB || '10'} MB。</p>
+          <p className="mt-1 text-[11.5px] text-[#98a3b3]">图片均为可选，不上传也能保存。支持 jpg / png / webp，单张不超过 {process.env.NEXT_PUBLIC_UPLOAD_MAX_MB || '10'} MB。已有图片在保存成功后才会删除原文件。</p>
         </div>
         {(['example', 'reference', 'generated'] as const).map((role) => (
           <div key={role} className="rounded-xl border border-[#ebeff5] p-3">

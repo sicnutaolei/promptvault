@@ -1,5 +1,6 @@
 import PasswordForm from '@/components/admin/PasswordForm';
 import SiteSettingsForm from '@/components/admin/SiteSettingsForm';
+import MaintenanceCard from '@/components/admin/MaintenanceCard';
 import { DB_PATH, DATA_DIR } from '@/lib/db';
 import { getSlogan } from '@/lib/settings';
 
@@ -33,6 +34,7 @@ export default function SettingsPage() {
         <h2 className="mb-2 text-[13px] font-medium text-[#6b7789]">备份</h2>
         <p className="text-[12.5px] leading-6 text-[#6b7789]">在宿主机项目目录执行 <code>./scripts/backup.sh</code>，会生成 <code>backup-YYYYmmdd-HHMMSS.tar.gz</code>（包含数据库与图片）。</p>
       </div>
+      <MaintenanceCard />
     </div>
   );
 }

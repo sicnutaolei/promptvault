@@ -106,6 +106,12 @@ export function listPublicPrompts(params: { q?: string; tag?: string; page?: num
   };
 }
 
+export function listPublicPromptEntries(): { id: number; updated_at: string }[] {
+  return getDb()
+    .prepare("SELECT p.id, p.updated_at FROM prompts p WHERE p.status = 'published' AND p.visibility = 'public' ORDER BY p.updated_at DESC, p.id DESC")
+    .all() as { id: number; updated_at: string }[];
+}
+
 export function listPublicTags(): { name: string; count: number }[] {
   return getDb()
     .prepare(

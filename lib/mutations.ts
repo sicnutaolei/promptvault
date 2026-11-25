@@ -40,12 +40,13 @@ export function createCollection(input: CollectionInput): CollectionRow {
   const db = getDb();
   const slug = uniqueCollectionSlug(input.slug?.trim() || input.name);
   const ts = nowIso();
+  const nextSort = (db.prepare('SELECT COALESCE(MAX(sort_order), -10) AS n FROM collections').get() as { n: number }).n + 10;
   const res = db
     .prepare(`INSERT INTO collections (name, slug, description, cover_path, cover_thumb_path, is_public, sort_order, created_at, updated_at)
               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
     .run(
       input.name, slug, input.description ?? null, input.cover_path ?? null, input.cover_thumb_path ?? null,
-      input.is_public === false || input.is_public === 0 ? 0 : 1, input.sort_order ?? 0, ts, ts,
+      input.is_public === false || input.is_public === 0 ? 0 : 1, input.sort_order ?? nextSort, ts, ts,
     );
   return db.prepare('SELECT * FROM collections WHERE id = ?').get(Number(res.lastInsertRowid)) as CollectionRow;
 }
@@ -93,6 +94,25 @@ export function setCollectionPrompts(collectionId: number, promptIds: number[]):
     promptIds.forEach((pid, index) => insert.run(collectionId, pid, index, ts));
   });
   tx();
+}
+
+/** 按给定顺序一次性重排全部收藏夹；必须覆盖现有全部 id，避免留下未排序项。 */
+export function reorderCollections(ids: number[]): boolean {
+  const db = getDb();
+  const all = (db.prepare('SELECT id FROM collections').all() as { id: number }[]).map((r) => r.id);
+  if (ids.length !== all.length) return false;
+  const known = new Set(all);
+  const seen = new Set<number>();
+  for (const id of ids) {
+    if (!Number.isInteger(id) || id <= 0 || seen.has(id) || !known.has(id)) return false;
+    seen.add(id);
+  }
+  const tx = db.transaction(() => {
+    const update = db.prepare('UPDATE collections SET sort_order = ? WHERE id = ?');
+    ids.forEach((id, index) => update.run(index * 10, id));
+  });
+  tx();
+  return true;
 }
 
 export interface PromptInput {
@@ -192,7 +212,13 @@ export function deletePrompt(id: number): boolean {
   return true;
 }
 
-export function purgeOrphanUploads(): number {
+/**
+ * 删除 uploads 下已无任何记录引用的 WebP 文件。
+ * 默认只清理 1 小时前的文件，避免误删后台正在编辑、尚未保存的上传图。
+ */
+export function purgeOrphanUploads(options: { minAgeMs?: number } = {}): number {
+  const minAgeMs = options.minAgeMs ?? 60 * 60 * 1000;
+  const now = Date.now();
   const db = getDb();
   const used = new Set<string>();
   for (const r of db.prepare('SELECT cover_path AS p FROM collections WHERE cover_path IS NOT NULL').all() as { p: string }[]) used.add(r.p);
@@ -202,9 +228,17 @@ export function purgeOrphanUploads(): number {
   for (const dir of [ORIGINAL_DIR, THUMB_DIR]) {
     if (!fs.existsSync(dir)) continue;
     for (const name of fs.readdirSync(dir)) {
+      if (!name.toLowerCase().endsWith('.webp')) continue;
       const rel = `${path.basename(dir)}/${name}`;
-      if (!used.has(rel)) {
-        try { fs.unlinkSync(path.join(dir, name)); removed++; } catch { /* ignore */ }
+      if (used.has(rel)) continue;
+      const abs = path.join(dir, name);
+      try {
+        const stat = fs.statSync(abs);
+        if (!stat.isFile() || now - stat.mtimeMs < minAgeMs) continue;
+        fs.unlinkSync(abs);
+        removed++;
+      } catch {
+        /* 文件被占用或已消失，跳过 */
       }
     }
   }

@@ -36,7 +36,8 @@ export default function Sidebar({ siteName }: { siteName: string }) {
   return (
     <aside className="sticky top-0 z-30 flex w-full items-center gap-3 border-b border-[#e8edf4] bg-white px-4 py-3 md:fixed md:inset-y-0 md:left-0 md:h-screen md:w-[212px] md:flex-col md:items-stretch md:gap-0 md:border-b-0 md:border-r md:px-3 md:py-6">
       <Link href="/" className="flex items-center gap-2.5 md:px-2 md:pb-6">
-        <span className="grid size-8 place-items-center rounded-[10px] bg-[#e8f1fd] text-[15px] font-semibold text-[#3f74c2]">P</span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.png" alt="" width={32} height={32} className="size-8 rounded-[10px]" />
         <span className="whitespace-nowrap text-[14px] font-semibold tracking-tight text-[#2f3a4a]">{siteName}</span>
       </Link>
       <nav className="ml-auto flex items-center gap-1 md:ml-0 md:flex-col md:items-stretch md:gap-1">

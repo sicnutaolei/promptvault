@@ -7,6 +7,7 @@ import type { CollectionCard } from '@/lib/types';
 export default function CollectionsManager() {
   const [items, setItems] = useState<CollectionCard[]>([]);
   const [loading, setLoading] = useState(true);
+  const [moving, setMoving] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -26,26 +27,30 @@ export default function CollectionsManager() {
 
   useEffect(() => { load(); }, []);
 
-  async function patch(id: number, body: Record<string, unknown>) {
-    const res = await fetch(`/api/admin/collections/${id}`, {
-      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-    });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(data.error || '更新失败');
-    }
-  }
-
   async function move(index: number, dir: -1 | 1) {
     const target = index + dir;
-    if (target < 0 || target >= items.length) return;
-    const a = items[index];
-    const b = items[target];
+    if (target < 0 || target >= items.length || moving) return;
+    const next = [...items];
+    [next[index], next[target]] = [next[target], next[index]];
+    setMoving(true);
+    setError('');
+    setMessage('');
     try {
-      await patch(a.id, { sort_order: target * 10 });
-      await patch(b.id, { sort_order: index * 10 });
-      load();
-    } catch (e) { setError(e instanceof Error ? e.message : '排序失败'); }
+      const res = await fetch('/api/admin/collections/reorder', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: next.map((c) => c.id) }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || '排序失败');
+      }
+      setItems(next);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '排序失败');
+    } finally {
+      setMoving(false);
+    }
   }
 
   async function remove(c: CollectionCard) {
@@ -80,8 +85,8 @@ export default function CollectionsManager() {
                 {c.description ? <p className="mt-0.5 line-clamp-1 text-[11.5px] text-[#a3adbb]">{c.description}</p> : null}
               </div>
               <div className="flex flex-wrap items-center gap-1.5">
-                <button onClick={() => move(index, -1)} disabled={index === 0} className="pv-btn px-2 py-1 text-[11.5px]">↑</button>
-                <button onClick={() => move(index, 1)} disabled={index === items.length - 1} className="pv-btn px-2 py-1 text-[11.5px]">↓</button>
+                <button onClick={() => move(index, -1)} disabled={moving || index === 0} className="pv-btn px-2 py-1 text-[11.5px]">↑</button>
+                <button onClick={() => move(index, 1)} disabled={moving || index === items.length - 1} className="pv-btn px-2 py-1 text-[11.5px]">↓</button>
                 <Link href={`/admin/collections/${c.id}/edit`} className="pv-btn px-2 py-1 text-[11.5px]">编辑</Link>
                 <button onClick={() => remove(c)} className="pv-btn pv-btn-danger px-2 py-1 text-[11.5px]">删除</button>
               </div>

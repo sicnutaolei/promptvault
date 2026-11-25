@@ -12,7 +12,7 @@ export default function CollectionForm({
   const router = useRouter();
   const [name, setName] = useState(initial?.name || '');
   const [description, setDescription] = useState(initial?.description || '');
-  const [sortOrder, setSortOrder] = useState(initial?.sort_order ?? 0);
+  const [sortOrder, setSortOrder] = useState(initial ? String(initial.sort_order) : '');
   const [ids, setIds] = useState<number[]>(selectedIds);
   const [filter, setFilter] = useState('');
   const [busy, setBusy] = useState(false);
@@ -29,10 +29,11 @@ export default function CollectionForm({
     if (!name.trim()) { setErr('名称必填'); return; }
     setBusy(true);
     try {
+      const parsedSort = Number(sortOrder);
       const body = {
         name: name.trim(),
         description: description.trim() || null,
-        sort_order: Number(sortOrder) || 0,
+        sort_order: sortOrder.trim() !== '' && Number.isFinite(parsedSort) ? parsedSort : undefined,
       };
       const res = await fetch(mode === 'edit' ? `/api/admin/collections/${initial!.id}` : '/api/admin/collections', {
         method: mode === 'edit' ? 'PATCH' : 'POST',
@@ -70,8 +71,8 @@ export default function CollectionForm({
           <input id="name" className="pv-input" value={name} onChange={(e) => setName(e.target.value)} required />
         </div>
         <div>
-          <label className="pv-label" htmlFor="sort">排序（小的在前）</label>
-          <input id="sort" type="number" className="pv-input" value={sortOrder} onChange={(e) => setSortOrder(Number(e.target.value))} />
+          <label className="pv-label" htmlFor="sort">排序（小的在前，留空置末）</label>
+          <input id="sort" type="number" step="10" className="pv-input" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} placeholder="自动" />
         </div>
         <div className="sm:col-span-2">
           <label className="pv-label" htmlFor="desc">备注</label>

@@ -9,6 +9,7 @@ services:
     environment:
       DATA_DIR: /data
       SITE_NAME: PromptVault
+      SITE_URL: ${SITE_URL:-http://localhost:3000}
       PORT: "3000"
       ADMIN_USERNAME: admin
       UPLOAD_MAX_MB: "10"

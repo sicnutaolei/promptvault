@@ -46,12 +46,23 @@ docker compose up -d
 
 脚本优先在容器内打包（`docker compose exec app tar`），因此不受宿主机上 `data/` 属主为 root 的影响；容器未运行时退回 `docker run` 只读挂载。建议先停容器再打包，SQLite 的 WAL 才会完整落盘；本项目开启 WAL，热备可能丢失最后几条写入。
 
+## 维护
+
+后台 **设置 → 维护 → 清理孤儿图片**：扫描 `./data/uploads/original|thumb` 下 1 小时前上传、且没有任何提示词/收藏夹引用的 WebP 并删除，返回清理数量。正在编辑、尚未保存的上传不会被误删。
+
+## SEO 与 PWA
+
+- `/sitemap.xml` 运行时生成，只收录首页与公开提示词；`/robots.txt` 屏蔽 `/admin`、`/api`。
+- `/manifest.webmanifest` 提供 PWA 清单，图标为 `public/pwa-192.png`、`public/pwa-512.png`。
+- 分享卡片、sitemap、robots 的绝对地址都取自 `SITE_URL`，公网部署时务必改成实际域名。
+
 ## 环境变量
 
 | 变量 | 默认 | 说明 |
 | --- | --- | --- |
 | `DATA_DIR` | `/data` | 数据目录，容器内路径 |
 | `SITE_NAME` | `PromptVault` | 站点名 |
+| `SITE_URL` | `http://localhost:3000` | 对外地址；用于分享卡片、sitemap、robots 的绝对链接，公网部署时改成实际域名 |
 | `PORT` | `3000` | 容器内监听端口 |
 | `ADMIN_USERNAME` | `admin` | 首次初始化的管理员用户名 |
 | `UPLOAD_MAX_MB` | `10` | 单张图片上限（MB） |
@@ -132,6 +143,10 @@ app/                 # 页面与 Route Handlers
   api/auth|public|admin|health
   admin/(panel)/     # 登录保护的后台页面
   p/[id], media/[...path]
+  not-found.tsx        # 自定义 404
+  sitemap.ts           # 站点地图（只列公开）
+  robots.ts            # 爬虫规则
+  manifest.ts          # PWA 清单
 components/          # 展示组件与后台 Client Components
 lib/
   db.ts              # 建表、管理员初始化、session secret
@@ -139,6 +154,7 @@ lib/
   queries.ts         # 读查询（首页/详情/统计）
   mutations.ts       # 写操作（收藏夹/提示词/标签/清理）
   settings.ts        # 首页 Slogan 读写
+  site.ts            # 站点名与对外 URL（运行时读 SITE_URL）
   media.ts, urls.ts  # 路径安全、媒体 URL
   validators.ts      # zod 入参校验
 scripts/backup.sh
