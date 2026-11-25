@@ -14,20 +14,25 @@ export default function Pagination({
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1).filter(
     (p) => p === 1 || p === totalPages || Math.abs(p - page) <= 2,
   );
+  const base = 'rounded-[10px] px-3.5 py-1.5 text-[12.5px] transition';
   return (
-    <div className="flex flex-wrap items-center justify-center gap-2 pt-4">
-      {page > 1 ? <Link href={href(page - 1)} className="pv-btn px-3 py-1.5 text-[12.5px]">上一页</Link> : null}
+    <div className="flex flex-wrap items-center justify-center gap-2 pt-8">
+      {page > 1 ? (
+        <Link href={href(page - 1)} className={`${base} border border-[#e4eaf2] bg-white text-[#5f6b7c] hover:border-[#cfdceb] hover:text-[#3f74c2]`}>上一页</Link>
+      ) : null}
       {pages.map((p, i) => (
         <span key={p} className="flex items-center gap-2">
-          {i > 0 && p - pages[i - 1] > 1 ? <span className="text-[#56628a]">…</span> : null}
+          {i > 0 && p - pages[i - 1] > 1 ? <span className="text-[#a3adbb]">…</span> : null}
           {p === page ? (
-            <span className="pv-btn pv-btn-primary px-3 py-1.5 text-[12.5px]">{p}</span>
+            <span className={`${base} bg-[#eaf2fd] font-medium text-[#3f74c2]`}>{p}</span>
           ) : (
-            <Link href={href(p)} className="pv-btn px-3 py-1.5 text-[12.5px]">{p}</Link>
+            <Link href={href(p)} className={`${base} text-[#68758a] hover:bg-white hover:text-[#3f74c2]`}>{p}</Link>
           )}
         </span>
       ))}
-      {page < totalPages ? <Link href={href(page + 1)} className="pv-btn px-3 py-1.5 text-[12.5px]">下一页</Link> : null}
+      {page < totalPages ? (
+        <Link href={href(page + 1)} className={`${base} border border-[#e4eaf2] bg-white text-[#5f6b7c] hover:border-[#cfdceb] hover:text-[#3f74c2]`}>下一页</Link>
+      ) : null}
     </div>
   );
 }

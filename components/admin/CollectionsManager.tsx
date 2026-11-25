@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import type { CollectionCard } from '@/lib/types';
-import { mediaUrl } from '@/lib/urls';
 
 export default function CollectionsManager() {
   const [items, setItems] = useState<CollectionCard[]>([]);
@@ -37,14 +36,6 @@ export default function CollectionsManager() {
     }
   }
 
-  async function toggle(c: CollectionCard) {
-    try {
-      await patch(c.id, { is_public: c.is_public ? 0 : 1 });
-      setMessage('已更新公开状态');
-      load();
-    } catch (e) { setError(e instanceof Error ? e.message : '更新失败'); }
-  }
-
   async function move(index: number, dir: -1 | 1) {
     const target = index + dir;
     if (target < 0 || target >= items.length) return;
@@ -67,44 +58,35 @@ export default function CollectionsManager() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-[20px] font-bold">收藏夹</h1>
+        <div>
+          <h1 className="text-[20px] font-semibold text-[#2f3a4a]">收藏夹</h1>
+          <p className="mt-1 text-[12px] text-[#98a3b3]">仅用于后台整理，不在首页展示。</p>
+        </div>
         <Link href="/admin/collections/new" className="pv-btn pv-btn-primary">新建收藏夹</Link>
       </div>
-      {message ? <p className="rounded-lg border border-[#204b3a] bg-[#10241d] px-3 py-2 text-[12.5px] text-[#7ee2b8]">{message}</p> : null}
-      {error ? <p className="rounded-lg border border-[#6b2436] bg-[#3a1520] px-3 py-2 text-[12.5px] text-[#ff9db0]">{error}</p> : null}
-      {loading ? <p className="text-[13px] text-[#8b97b8]">加载中…</p> : items.length === 0 ? (
-        <div className="pv-card p-10 text-center text-[13px] text-[#8b97b8]">还没有收藏夹，先新建一个。</div>
+      {message ? <p className="rounded-lg border border-[#cfe9dd] bg-[#f2fbf7] px-3 py-2 text-[12.5px] text-[#3c8b68]">{message}</p> : null}
+      {error ? <p className="rounded-lg border border-[#f3d2d8] bg-[#fdf5f6] px-3 py-2 text-[12.5px] text-[#b4546a]">{error}</p> : null}
+      {loading ? <p className="text-[13px] text-[#98a3b3]">加载中…</p> : items.length === 0 ? (
+        <div className="pv-card p-10 text-center text-[13px] text-[#98a3b3]">还没有收藏夹，先新建一个。</div>
       ) : (
-        <div className="space-y-3">
-          {items.map((c, index) => {
-            const cover = mediaUrl(c.cover_thumb_path || c.cover_path);
-            return (
-              <div key={c.id} className="pv-card flex flex-wrap items-center gap-3 p-3">
-                <div className="h-14 w-24 shrink-0 overflow-hidden rounded-lg bg-[#0e1425]">
-                  {cover ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={cover} alt="" className="h-full w-full object-cover" />
-                  ) : null}
+        <div className="space-y-2">
+          {items.map((c, index) => (
+            <div key={c.id} className="pv-card flex flex-wrap items-center gap-3 p-3.5">
+              <div className="min-w-[140px] flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[14px] font-medium text-[#3d4859]">{c.name}</span>
+                  <span className="text-[11.5px] text-[#98a3b3]">{c.prompt_count} 条</span>
                 </div>
-                <div className="min-w-[140px] flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[14px] font-semibold">{c.name}</span>
-                    <span className={`pv-chip ${c.is_public ? 'border-[#204b3a] text-[#7ee2b8]' : 'border-[#6b5a24] text-[#ffd479]'}`}>
-                      {c.is_public ? '公开' : '私有'}
-                    </span>
-                    <span className="text-[11.5px] text-[#66739a]">/{c.slug} · {c.prompt_count} 条 · 排序 {c.sort_order}</span>
-                  </div>
-                </div>
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <button onClick={() => move(index, -1)} disabled={index === 0} className="pv-btn px-2 py-1 text-[11.5px]">↑</button>
-                  <button onClick={() => move(index, 1)} disabled={index === items.length - 1} className="pv-btn px-2 py-1 text-[11.5px]">↓</button>
-                  <button onClick={() => toggle(c)} className="pv-btn px-2 py-1 text-[11.5px]">{c.is_public ? '设为私有' : '设为公开'}</button>
-                  <Link href={`/admin/collections/${c.id}/edit`} className="pv-btn px-2 py-1 text-[11.5px]">编辑</Link>
-                  <button onClick={() => remove(c)} className="pv-btn pv-btn-danger px-2 py-1 text-[11.5px]">删除</button>
-                </div>
+                {c.description ? <p className="mt-0.5 line-clamp-1 text-[11.5px] text-[#a3adbb]">{c.description}</p> : null}
               </div>
-            );
-          })}
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button onClick={() => move(index, -1)} disabled={index === 0} className="pv-btn px-2 py-1 text-[11.5px]">↑</button>
+                <button onClick={() => move(index, 1)} disabled={index === items.length - 1} className="pv-btn px-2 py-1 text-[11.5px]">↓</button>
+                <Link href={`/admin/collections/${c.id}/edit`} className="pv-btn px-2 py-1 text-[11.5px]">编辑</Link>
+                <button onClick={() => remove(c)} className="pv-btn pv-btn-danger px-2 py-1 text-[11.5px]">删除</button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

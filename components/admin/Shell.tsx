@@ -21,21 +21,25 @@ export default function Shell({ username, children }: { username: string; childr
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <nav className="flex flex-1 items-center gap-1 overflow-x-auto">
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <nav className="pv-hscroll flex items-center gap-1 overflow-x-auto rounded-xl border border-[#e8edf4] bg-white p-1">
           {links.map((l) => {
             const active = l.href === '/admin' ? pathname === '/admin' : pathname.startsWith(l.href);
             return (
               <Link key={l.href} href={l.href}
-                className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-[13px] ${active ? 'bg-[#26324f] text-white' : 'text-[#a9b6d8] hover:bg-[#18203a] hover:text-white'}`}>
+                className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-[13px] transition ${
+                  active ? 'bg-[#eef5fe] font-medium text-[#3f74c2]' : 'text-[#5f6b7c] hover:bg-[#f5f8fc] hover:text-[#2f3a4a]'
+                }`}>
                 {l.label}
               </Link>
             );
           })}
         </nav>
-        <span className="hidden text-[12px] text-[#66739a] sm:inline">{username}</span>
-        <button type="button" onClick={logout} className="pv-btn px-3 py-1.5 text-[12px]">退出</button>
+        <div className="flex items-center gap-2">
+          <span className="hidden text-[12px] text-[#98a3b3] sm:inline">{username}</span>
+          <button type="button" onClick={logout} className="pv-btn px-3 py-1.5 text-[12px]">退出</button>
+        </div>
       </div>
       {children}
     </div>

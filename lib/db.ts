@@ -75,6 +75,11 @@ CREATE TABLE IF NOT EXISTS collection_prompts (
   created_at TEXT NOT NULL,
   PRIMARY KEY(collection_id, prompt_id)
 );
+CREATE TABLE IF NOT EXISTS site_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
 CREATE INDEX IF NOT EXISTS idx_prompt_images_prompt ON prompt_images(prompt_id);
 CREATE INDEX IF NOT EXISTS idx_collection_prompts_col ON collection_prompts(collection_id);
 CREATE INDEX IF NOT EXISTS idx_prompts_visibility ON prompts(visibility, status);

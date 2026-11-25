@@ -2,6 +2,7 @@ node_modules
 .next
 out
 data
+data-dev
 *.log
 .env*.local
 next-env.d.ts

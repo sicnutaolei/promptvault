@@ -15,7 +15,6 @@ export async function GET(req: Request) {
     ok: true,
     ...listAdminPrompts({
       q: sp.get('q')?.trim() || undefined,
-      type: sp.get('type') || undefined,
       visibility: sp.get('visibility') || undefined,
       page: Number(sp.get('page')) || 1,
     }),

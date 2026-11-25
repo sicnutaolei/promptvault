@@ -30,7 +30,7 @@ export const imageSchema = z.object({
 
 export const promptSchema = z.object({
   title: z.string().trim().min(1, '标题必填').max(200),
-  type: z.enum(['text2img', 'img2img']),
+  type: z.enum(['text2img', 'img2img']).optional(),
   positive_prompt: z.string().min(1, '正向提示词必填').max(20000),
   negative_prompt: z.string().max(20000).optional().nullable(),
   model: z.string().max(200).optional().nullable(),
@@ -51,6 +51,9 @@ export const promptSchema = z.object({
 export const roleSchema = z.enum(['example', 'reference', 'generated']);
 export const promptIdsSchema = z.object({ promptIds: z.array(z.number().int().positive()).max(500) });
 export const deleteUploadSchema = z.object({ filePath: relPath, thumbPath: relPath });
+export const siteSettingsSchema = z.object({
+  slogan: z.string().trim().min(1, 'Slogan 不能为空').max(200, 'Slogan 最多 200 字'),
+});
 
 export function firstError(error: z.ZodError): string {
   return error.issues[0]?.message || '参数不合法';

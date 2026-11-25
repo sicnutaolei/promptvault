@@ -59,7 +59,6 @@ export interface PromptCard extends PromptRow {
 export interface PromptDetail extends PromptRow {
   images: PromptImage[];
   tags: string[];
-  collections: { id: number; name: string; slug: string; is_public: number }[];
 }
 
 export interface Paged<T> {

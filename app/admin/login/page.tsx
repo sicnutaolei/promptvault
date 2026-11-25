@@ -38,8 +38,8 @@ export default function LoginPage() {
     <div className="mx-auto mt-10 max-w-sm">
       <form onSubmit={submit} className="pv-card space-y-4 p-6">
         <div>
-          <h1 className="text-[20px] font-bold">管理员登录</h1>
-          <p className="mt-1 text-[12.5px] text-[#8b97b8]">首次启动的管理员密码见容器日志 <code className="text-[#a9b6d8]">docker compose logs app</code></p>
+          <h1 className="text-[20px] font-semibold text-[#2f3a4a]">管理员登录</h1>
+          <p className="mt-1 text-[12.5px] text-[#98a3b3]">首次启动的管理员密码见容器日志 <code className="text-[#6b7789]">docker compose logs app</code></p>
         </div>
         <div>
           <label className="pv-label" htmlFor="u">用户名</label>
@@ -49,7 +49,7 @@ export default function LoginPage() {
           <label className="pv-label" htmlFor="p">密码</label>
           <input id="p" type="password" className="pv-input" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
         </div>
-        {error ? <p className="rounded-lg border border-[#6b2436] bg-[#3a1520] px-3 py-2 text-[12.5px] text-[#ff9db0]">{error}</p> : null}
+        {error ? <p className="rounded-lg border border-[#f3d2d8] bg-[#fdf5f6] px-3 py-2 text-[12.5px] text-[#b4546a]">{error}</p> : null}
         <button type="submit" disabled={busy} className="pv-btn pv-btn-primary w-full">{busy ? '登录中…' : '登录'}</button>
       </form>
     </div>

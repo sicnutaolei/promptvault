@@ -1,6 +1,6 @@
 # PromptVault
 
-自托管的文生图 / 图生图提示词收藏站（单管理员）。收藏提示词、参数、示例图与参考图，按收藏夹整理，支持搜索与一键复制。
+自托管的 AI 绘画提示词库（单管理员）。首页以图片卡片网格展示全部公开提示词，支持搜索、标签筛选与一键复制；收藏夹仅用于后台内部整理。首页 Slogan 可在后台设置中修改。
 
 技术栈：**Next.js 15 App Router + TypeScript + Tailwind CSS + better-sqlite3 + jose + sharp + zod**，无 ORM、无外部数据库、无对象存储。
 
@@ -98,7 +98,7 @@ DATA_DIR=./data-dev npm start        # 本地跑生产版本
 - 登录失败按 IP 限流：15 分钟窗口内 10 次失败后返回 429。
 - `/media/*` 只允许 GET，路径解析后必须落在 `DATA_DIR/uploads` 内，否则 403/404；文件名是随机 UUID。
 - 上传仅接受 jpg / png / webp（禁止 SVG），用 sharp 重新编码后写入，原图与缩略图均为 WebP（400px 宽）。
-- 私有提示词只在「属于公开收藏夹」时对游客可见；私有收藏夹对游客 404。
+- 首页与公开接口只展示 `visibility = public` 的提示词；私有提示词仅登录后台可见，与收藏夹无关。
 
 ## 常见问题
 
@@ -110,7 +110,7 @@ DATA_DIR=./data-dev npm start        # 本地跑生产版本
 
 **图片 404？** 确认 `./data/uploads/original`、`./data/uploads/thumb` 存在且容器可写（compose 以 root 运行，一般无需额外处理）。
 
-**中文收藏夹 slug 变成 `collection`？** slug 只保留 ASCII；中文名会回退为 `collection`，重复时自动追加 `-2`、`-3`。想自定义就在表单里手填 slug。
+**公开提示词没有出现在首页？** 检查提示词的「可见性」是否为公开；私有提示词只在登录后台后可见。
 
 **构建时 better-sqlite3 报错？** Dockerfile 已安装 `python3 make g++`；若改过 `package.json` 记得同步刷新 `package-lock.json`（`npm install`）。
 
@@ -131,13 +131,14 @@ netsh interface portproxy show v4tov4
 app/                 # 页面与 Route Handlers
   api/auth|public|admin|health
   admin/(panel)/     # 登录保护的后台页面
-  c/[slug], p/[id], search, media/[...path]
+  p/[id], media/[...path]
 components/          # 展示组件与后台 Client Components
 lib/
   db.ts              # 建表、管理员初始化、session secret
   auth.ts            # JWT、Cookie、Origin、限流
-  queries.ts         # 读查询（首页/详情/搜索/统计）
+  queries.ts         # 读查询（首页/详情/统计）
   mutations.ts       # 写操作（收藏夹/提示词/标签/清理）
+  settings.ts        # 首页 Slogan 读写
   media.ts, urls.ts  # 路径安全、媒体 URL
   validators.ts      # zod 入参校验
 scripts/backup.sh

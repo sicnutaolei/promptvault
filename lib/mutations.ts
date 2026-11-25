@@ -97,7 +97,7 @@ export function setCollectionPrompts(collectionId: number, promptIds: number[]):
 
 export interface PromptInput {
   title: string;
-  type: 'text2img' | 'img2img';
+  type?: 'text2img' | 'img2img';
   positive_prompt: string;
   negative_prompt?: string | null;
   model?: string | null;
@@ -136,7 +136,7 @@ export function createPrompt(input: PromptInput): PromptRow {
   const tx = db.transaction(() => {
     const res = db.prepare(`INSERT INTO prompts (title, type, positive_prompt, negative_prompt, model, sampler, steps, cfg_scale, seed, width, height, lora, source_url, notes, visibility, status, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'published', ?, ?)`)
-      .run(input.title, input.type, input.positive_prompt, input.negative_prompt ?? null, input.model ?? null, input.sampler ?? null,
+      .run(input.title, input.type ?? 'text2img', input.positive_prompt, input.negative_prompt ?? null, input.model ?? null, input.sampler ?? null,
         input.steps ?? null, input.cfg_scale ?? null, input.seed ?? null, input.width ?? null, input.height ?? null,
         input.lora ?? null, input.source_url ?? null, input.notes ?? null, input.visibility ?? 'public', ts, ts);
     const id = Number(res.lastInsertRowid);
@@ -159,7 +159,7 @@ export function updatePrompt(id: number, input: PromptInput): PromptRow | null {
   const oldImages = db.prepare('SELECT file_path, thumb_path FROM prompt_images WHERE prompt_id = ?').all(id) as { file_path: string; thumb_path: string }[];
   const tx = db.transaction(() => {
     db.prepare(`UPDATE prompts SET title = ?, type = ?, positive_prompt = ?, negative_prompt = ?, model = ?, sampler = ?, steps = ?, cfg_scale = ?, seed = ?, width = ?, height = ?, lora = ?, source_url = ?, notes = ?, visibility = ?, updated_at = ? WHERE id = ?`)
-      .run(input.title, input.type, input.positive_prompt, input.negative_prompt ?? null, input.model ?? null, input.sampler ?? null,
+      .run(input.title, input.type ?? current.type, input.positive_prompt, input.negative_prompt ?? null, input.model ?? null, input.sampler ?? null,
         input.steps ?? null, input.cfg_scale ?? null, input.seed ?? null, input.width ?? null, input.height ?? null,
         input.lora ?? null, input.source_url ?? null, input.notes ?? null, input.visibility ?? 'public', nowIso(), id);
     db.prepare('DELETE FROM prompt_tags WHERE prompt_id = ?').run(id);

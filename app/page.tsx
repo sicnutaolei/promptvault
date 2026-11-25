@@ -1,66 +1,84 @@
 import Link from 'next/link';
-import { listPublicCollections } from '@/lib/queries';
-import { mediaUrl } from '@/lib/urls';
+import { listPublicPrompts, listPublicTags } from '@/lib/queries';
+import { getSlogan } from '@/lib/settings';
+import PromptCard from '@/components/PromptCard';
+import Pagination from '@/components/Pagination';
 
 export const dynamic = 'force-dynamic';
 
-export default function HomePage() {
-  const collections = listPublicCollections();
-  const siteName = process.env.SITE_NAME || 'PromptVault';
-  return (
-    <div className="space-y-8">
-      <section className="pv-card overflow-hidden p-7">
-        <p className="text-[12px] uppercase tracking-[0.22em] text-[#7f8db3]">Prompt Library</p>
-        <h1 className="mt-2 text-[30px] font-bold leading-tight sm:text-[38px]">
-          把好用的 <span className="pv-grad-text">提示词</span> 收进自己的库
-        </h1>
-        <p className="mt-3 max-w-2xl text-[14px] leading-7 text-[#a9b6d8]">
-          {siteName} 收集文生图 / 图生图的提示词、参数与示例图，按收藏夹整理，支持全文搜索与一键复制。
-        </p>
-        <div className="mt-5 flex flex-wrap gap-2">
-          <Link href="/search" className="pv-btn pv-btn-primary">开始浏览</Link>
-          <Link href="/admin" className="pv-btn">进入管理</Link>
-        </div>
-      </section>
+export default async function HomePage({
+  searchParams,
+}: { searchParams: Promise<{ q?: string; tag?: string; page?: string }> }) {
+  const sp = await searchParams;
+  const q = sp.q?.trim() || '';
+  const tag = sp.tag?.trim() || '';
+  const result = listPublicPrompts({ q: q || undefined, tag: tag || undefined, page: Number(sp.page) || 1 });
+  const tags = listPublicTags();
+  const slogan = getSlogan();
 
-      <section>
-        <div className="mb-3 flex items-end justify-between">
-          <h2 className="text-[16px] font-semibold">公开收藏夹</h2>
-          <span className="text-[12px] text-[#7f8db3]">{collections.length} 个</span>
+  const tagHref = (name: string | null) => {
+    const params = new URLSearchParams();
+    if (q) params.set('q', q);
+    if (name) params.set('tag', name);
+    const qs = params.toString();
+    return qs ? `/?${qs}` : '/';
+  };
+
+  const chipClass = (active: boolean) =>
+    `shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-[12.5px] transition ${
+      active
+        ? 'bg-[#dfecfc] font-medium text-[#2f66b8]'
+        : 'border border-[#e4eaf2] bg-white text-[#68758a] hover:border-[#cfdceb] hover:text-[#3f74c2]'
+    }`;
+
+  return (
+    <div className="mx-auto w-full max-w-[1280px]">
+      <h1 className="text-[21px] font-semibold leading-snug tracking-tight text-[#303a4a] sm:text-[24px]">{slogan}</h1>
+
+      <form action="/" method="get" className="mt-5 flex max-w-[640px] gap-2">
+        {tag ? <input type="hidden" name="tag" value={tag} /> : null}
+        <input
+          name="q"
+          defaultValue={q}
+          placeholder="搜索提示词或标签"
+          aria-label="搜索提示词"
+          className="pv-input h-11 flex-1"
+        />
+        <button type="submit" className="pv-btn pv-btn-primary h-11 px-6">搜索</button>
+      </form>
+
+      {tags.length ? (
+        <div className="pv-hscroll mt-4 flex gap-2 overflow-x-auto pb-1">
+          <Link href={tagHref(null)} className={chipClass(!tag)}>全部</Link>
+          {tags.map((t) => (
+            <Link key={t.name} href={tagHref(t.name)} className={chipClass(tag === t.name)}>
+              {t.name}
+            </Link>
+          ))}
         </div>
-        {collections.length === 0 ? (
-          <div className="pv-card grid place-items-center gap-2 p-14 text-center">
-            <p className="text-[15px] font-medium">还没有公开收藏夹</p>
-            <p className="text-[13px] text-[#8b97b8]">登录后台创建第一个收藏夹，并把它设为公开。</p>
-            <Link href="/admin/collections/new" className="pv-btn pv-btn-primary mt-2">新建收藏夹</Link>
+      ) : null}
+
+      <div className="mt-6">
+        {result.items.length === 0 ? (
+          <div className="pv-card grid place-items-center gap-1.5 px-6 py-16 text-center">
+            <p className="text-[14px] font-medium text-[#3d4859]">没有找到提示词</p>
+            <p className="text-[12.5px] text-[#98a3b3]">
+              {q || tag ? '换个关键词或筛选条件试试' : '在后台发布第一条公开提示词后，这里就会展示'}
+            </p>
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {collections.map((c) => {
-              const cover = mediaUrl(c.cover_thumb_path || c.cover_path);
-              return (
-                <Link key={c.id} href={`/c/${c.slug}`} className="pv-card group overflow-hidden transition hover:border-[#3a4a7a]">
-                  <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#0e1425]">
-                    {cover ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={cover} alt={c.name} className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]" />
-                    ) : (
-                      <div className="grid h-full place-items-center text-[12px] text-[#56628a]">无封面</div>
-                    )}
-                  </div>
-                  <div className="space-y-1 p-4">
-                    <div className="flex items-center justify-between gap-2">
-                      <h3 className="truncate text-[15px] font-semibold">{c.name}</h3>
-                      <span className="pv-chip shrink-0">{c.prompt_count} 条</span>
-                    </div>
-                    <p className="line-clamp-2 text-[12.5px] leading-6 text-[#8b97b8]">{c.description || '暂无描述'}</p>
-                  </div>
-                </Link>
-              );
-            })}
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
+            {result.items.map((prompt) => <PromptCard key={prompt.id} prompt={prompt} />)}
           </div>
         )}
-      </section>
+      </div>
+
+      <Pagination
+        page={result.page}
+        totalPages={result.totalPages}
+        basePath="/"
+        query={{ q: q || undefined, tag: tag || undefined }}
+      />
     </div>
   );
 }
