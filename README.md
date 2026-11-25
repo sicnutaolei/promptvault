@@ -53,8 +53,13 @@ docker compose up -d
 ## SEO 与 PWA
 
 - `/sitemap.xml` 运行时生成，只收录首页与公开提示词；`/robots.txt` 屏蔽 `/admin`、`/api`。
-- `/manifest.webmanifest` 提供 PWA 清单，图标为 `public/pwa-192.png`、`public/pwa-512.png`。
-- 分享卡片、sitemap、robots 的绝对地址都取自 `SITE_URL`，公网部署时务必改成实际域名。
+- `/manifest.webmanifest` 提供 PWA 清单：`id`、`standalone`、192/512 图标与主题色。
+- `public/sw.js` 是 service worker，生产环境由 `components/PwaRegister.tsx` 自动注册，作用域 `/`；离线时导航回退到 `public/offline.html`。
+- 手机 Chrome 安装条件：HTTPS（`localhost` / `127.0.0.1` 例外）、manifest、192/512 图标、带 `fetch` 处理器的 service worker。安装入口在 Chrome 菜单「安装应用 / 添加到主屏幕」，首次不弹提示时刷新一次或直接用菜单。
+- 手机真机联调可先 `adb reverse tcp:3000 tcp:3000`，再用手机 Chrome 打开 `http://localhost:3000`；直接访问局域网 `http://192.168.x.x:3000` 不是安全上下文，不会出现安装入口。公网则用 HTTPS 域名或隧道。
+- 开发模式不注册 service worker；验证安装请用 `npm run build && npm start` 或容器。
+- 修改缓存策略后，提升 `public/sw.js` 顶部的 `VERSION`，旧缓存会在激活时清掉。
+- 分享卡片、sitemap、robots 的绝对地址都取自 `SITE_URL`，公网部署时务必改成实际 HTTPS 域名。
 
 ## 环境变量
 

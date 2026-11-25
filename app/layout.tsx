@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import Sidebar from '@/components/Sidebar';
+import PwaRegister from '@/components/PwaRegister';
 import { SITE_NAME, siteUrl } from '@/lib/site';
 import './globals.css';
 
@@ -9,6 +10,11 @@ export async function generateMetadata(): Promise<Metadata> {
     title: { default: `${SITE_NAME} · 提示词库`, template: `%s · ${SITE_NAME}` },
     description: '自托管 AI 绘画提示词与参数收藏：搜索、标签筛选、一键复制。',
     applicationName: SITE_NAME,
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: 'default',
+      title: SITE_NAME,
+    },
     openGraph: {
       type: 'website',
       locale: 'zh_CN',
@@ -37,6 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="min-h-screen px-4 py-6 md:ml-[212px] md:px-8 md:py-8 lg:px-10">
           {children}
         </main>
+        <PwaRegister />
       </body>
     </html>
   );

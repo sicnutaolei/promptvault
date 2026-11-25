@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f6f8fb" />
+    <title>离线 · PromptVault</title>
+    <link rel="icon" href="/icon.png" type="image/png" sizes="256x256" />
+    <style>
+      :root { color-scheme: light; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; min-height: 100vh; background: #f6f8fb; color: #2f3a4a;
+        font-family: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        display: grid; place-items: center; padding: 24px; position: relative; overflow: hidden;
+        -webkit-font-smoothing: antialiased;
+      }
+      .blob { position: fixed; border-radius: 50%; filter: blur(48px); pointer-events: none; }
+      .b1 { width: 300px; height: 300px; left: 6%; top: 8%; background: #bfe9ef; opacity: .55; }
+      .b2 { width: 260px; height: 260px; right: 6%; top: 4%; background: #e7c9f2; opacity: .5; }
+      .b3 { width: 340px; height: 340px; left: 34%; bottom: -6%; background: #ffd8df; opacity: .5; }
+      .card {
+        position: relative; width: 100%; max-width: 520px; background: #fff;
+        border: 1px solid #e8edf4; border-radius: 18px; overflow: hidden;
+        box-shadow: 0 12px 40px rgba(31, 61, 102, .07);
+      }
+      .bar { height: 6px; background: linear-gradient(90deg,#8fe0e8,#a9b8f4,#c9a7e8,#f6b6c9,#ffe3a8); }
+      .inner { padding: 40px 28px 34px; text-align: center; }
+      .logo {
+        width: 58px; height: 58px; margin: 0 auto; border-radius: 16px;
+        background: linear-gradient(135deg,#8fe0e8 0%,#a9b8f4 32%,#c9a7e8 58%,#f6b6c9 82%,#ffe3a8 100%);
+        color: #fff; font: 600 32px/58px "Segoe UI", sans-serif; letter-spacing: -.02em;
+      }
+      .eyebrow { margin: 22px 0 0; font-size: 11px; letter-spacing: .24em; color: #98a3b3; font-weight: 600; }
+      h1 { margin: 6px 0 0; font-size: 34px; line-height: 1.25; letter-spacing: -.03em; }
+      .desc { margin: 12px auto 0; max-width: 360px; font-size: 13.5px; line-height: 1.9; color: #5f6b7c; }
+      .actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+      button, a {
+        display: inline-flex; align-items: center; justify-content: center;
+        height: 40px; padding: 0 18px; border-radius: 10px; font-size: 13.5px; font-weight: 500;
+        text-decoration: none; cursor: pointer; transition: background .15s, border-color .15s;
+      }
+      button { background: #4f86d6; color: #fff; border: 1px solid #4f86d6; }
+      button:hover { background: #3f74c2; border-color: #3f74c2; }
+      a { background: #fff; color: #4a5668; border: 1px solid #dde5ee; }
+      a:hover { background: #f3f7fc; border-color: #c9d7e8; }
+      .rule { width: 64px; height: 1px; margin: 30px auto 0; background: linear-gradient(90deg,#8fe0e8,#c9a7e8,#f6b6c9); }
+      .foot { margin: 14px 0 0; font-size: 11.5px; color: #a3adbb; }
+    </style>
+  </head>
+  <body>
+    <span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span>
+    <main class="card">
+      <div class="bar"></div>
+      <div class="inner">
+        <div class="logo" aria-hidden="true">P</div>
+        <p class="eyebrow">OFFLINE</p>
+        <h1>网络断开了</h1>
+        <p class="desc">页面暂时无法加载。已缓存的界面仍可打开，等网络恢复后刷新即可。</p>
+        <div class="actions">
+          <button type="button" onclick="location.reload()">重新加载</button>
+          <a href="/">返回提示词库</a>
+        </div>
+        <div class="rule"></div>
+        <p class="foot">PromptVault · 自托管 AI 绘画提示词库</p>
+      </div>
+    </main>
+  </body>
+</html>
