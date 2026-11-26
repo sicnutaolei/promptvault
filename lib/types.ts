@@ -56,6 +56,14 @@ export interface PromptCard extends PromptRow {
   tags: string[];
 }
 
+/** 首页网格只需要的最小字段，避免把完整提示词塞进 HTML/RSC。 */
+export interface PromptTile {
+  id: number;
+  title: string;
+  thumb: string | null;
+  updated_at: string;
+}
+
 export interface PromptDetail extends PromptRow {
   images: PromptImage[];
   tags: string[];

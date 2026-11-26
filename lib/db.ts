@@ -83,6 +83,8 @@ CREATE TABLE IF NOT EXISTS site_settings (
 CREATE INDEX IF NOT EXISTS idx_prompt_images_prompt ON prompt_images(prompt_id);
 CREATE INDEX IF NOT EXISTS idx_collection_prompts_col ON collection_prompts(collection_id);
 CREATE INDEX IF NOT EXISTS idx_prompts_visibility ON prompts(visibility, status);
+CREATE INDEX IF NOT EXISTS idx_prompts_public_feed
+  ON prompts(visibility, status, updated_at DESC, id DESC);
 `;
 
 function ensureDirs() {

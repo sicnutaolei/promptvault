@@ -1,6 +1,6 @@
 import { getDb } from './db';
 import type {
-  CollectionCard, CollectionRow, Paged, PromptCard, PromptDetail, PromptImage, PromptRow,
+  CollectionCard, CollectionRow, Paged, PromptCard, PromptDetail, PromptImage, PromptRow, PromptTile,
 } from './types';
 
 const PAGE_SIZE = 20;
@@ -30,14 +30,15 @@ export function tagsByPrompt(ids: number[]): Map<number, string[]> {
   return map;
 }
 
-const CARD_SELECT = `
-  SELECT p.*, (
+const THUMB_SELECT = `(
     SELECT pi.thumb_path FROM prompt_images pi WHERE pi.prompt_id = p.id
     ORDER BY CASE pi.role WHEN 'example' THEN 0 WHEN 'generated' THEN 1 ELSE 2 END, pi.sort_order, pi.id
     LIMIT 1
-  ) AS thumb
-  FROM prompts p
-`;
+  ) AS thumb`;
+
+const CARD_SELECT = `SELECT p.*, ${THUMB_SELECT} FROM prompts p`;
+
+const TILE_SELECT = `SELECT p.id, p.title, p.updated_at, ${THUMB_SELECT} FROM prompts p`;
 
 const VISIBLE_SQL = `p.status = 'published' AND p.visibility = 'public'`;
 
@@ -79,7 +80,7 @@ export function getPromptDetail(id: number): (PromptDetail & { publiclyVisible: 
   };
 }
 
-export function listPublicPrompts(params: { q?: string; tag?: string; page?: number }): Paged<PromptCard> {
+export function listPublicPrompts(params: { q?: string; tag?: string; page?: number }): Paged<PromptTile> {
   const db = getDb();
   const where: string[] = [VISIBLE_SQL];
   const args: (string | number)[] = [];
@@ -96,14 +97,10 @@ export function listPublicPrompts(params: { q?: string; tag?: string; page?: num
   const total = (db.prepare(`SELECT COUNT(*) AS n FROM prompts p WHERE ${clause}`).get(...args) as { n: number }).n;
   const totalPages = Math.max(1, Math.ceil(total / PUBLIC_PAGE_SIZE));
   const page = Math.min(Math.max(1, params.page || 1), totalPages);
-  const rows = db
-    .prepare(`${CARD_SELECT} WHERE ${clause} ORDER BY p.updated_at DESC, p.id DESC LIMIT ? OFFSET ?`)
-    .all(...args, PUBLIC_PAGE_SIZE, (page - 1) * PUBLIC_PAGE_SIZE) as (PromptRow & { thumb: string | null })[];
-  const tagMap = tagsByPrompt(rows.map((r) => r.id));
-  return {
-    items: rows.map((r) => ({ ...r, tags: tagMap.get(r.id) || [] })),
-    page, pageSize: PUBLIC_PAGE_SIZE, total, totalPages,
-  };
+  const items = db
+    .prepare(`${TILE_SELECT} WHERE ${clause} ORDER BY p.updated_at DESC, p.id DESC LIMIT ? OFFSET ?`)
+    .all(...args, PUBLIC_PAGE_SIZE, (page - 1) * PUBLIC_PAGE_SIZE) as PromptTile[];
+  return { items, page, pageSize: PUBLIC_PAGE_SIZE, total, totalPages };
 }
 
 export function listPublicPromptEntries(): { id: number; updated_at: string }[] {

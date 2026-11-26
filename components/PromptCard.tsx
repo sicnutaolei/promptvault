@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { mediaUrl } from '@/lib/urls';
-import type { PromptCard as PromptCardType } from '@/lib/types';
+import type { PromptTile } from '@/lib/types';
 
-export default function PromptCard({ prompt }: { prompt: PromptCardType }) {
+export default function PromptCard({ prompt }: { prompt: PromptTile }) {
   const thumb = mediaUrl(prompt.thumb);
   return (
     <Link
